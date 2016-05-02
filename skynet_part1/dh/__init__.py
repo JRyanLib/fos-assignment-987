@@ -1,6 +1,5 @@
 from Crypto.Hash import SHA256
-#from Crypto.Random
-import random
+from Crypto.Random import random
 
 from lib.helpers import read_hex
 
@@ -40,6 +39,4 @@ def calculate_dh_secret(their_public, my_private):
     shared_hash = SHA256.new(bytes(shared_secret, "ascii")).hexdigest()
     return shared_hash
 
-key = create_dh_key
-print (key)
 
