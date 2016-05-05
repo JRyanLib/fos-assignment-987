@@ -53,7 +53,7 @@ def calculate_dh_secret(public_key, private_key):
     # (b) We can convert to raw bytes easily
     # (c) We could add additional information if we wanted
     # Feel free to change SHA256 to a different value if more appropriate
-    shared_hash = SHA256.new(bytes(str((shared_secret, "ascii"))).hexdigest())
+    shared_hash = SHA256.new(bytes(str(shared_secret, "ascii"))).hexdigest()
     return shared_hash
 
 # Test printing for key
