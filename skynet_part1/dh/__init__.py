@@ -55,6 +55,7 @@ def calculate_dh_secret(public_key, private_key):
     # Feel free to change SHA256 to a different value if more appropriate
     shared_hash = SHA256.new(bytes(str(shared_secret, "ascii"))).hexdigest()
     return shared_hash
+    #Amartej: Is our shared hash not working because we have used SHA256? Could we use a different value? 
 
 # Test printing for key
 public_key, private_key = create_dh_key()
