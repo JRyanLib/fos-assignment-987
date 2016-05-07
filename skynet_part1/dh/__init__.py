@@ -43,9 +43,9 @@ def create_dh_key():
     # Returns (public, private)
     return (public_key, private_key)
 
-def calculate_dh_secret(public_key, private_key):
+def calculate_dh_secret(their_public, my_private):
     # Calculate the shared secret
-    shared_secret = pow(public_key, private_key, prime)
+    shared_secret = pow(their_public, my_private, prime)
 
     # Hash the value so that:
     # (a) There's no bias in the bits of the output
@@ -53,7 +53,7 @@ def calculate_dh_secret(public_key, private_key):
     # (b) We can convert to raw bytes easily
     # (c) We could add additional information if we wanted
     # Feel free to change SHA256 to a different value if more appropriate
-    shared_hash = SHA256.new(bytes(str(shared_secret, "ascii"))).hexdigest()
+    shared_hash = SHA256.new(bytes(str(shared_secret), "ascii")).hexdigest()
     return shared_hash
     #(TO BE REMOVED) Amartej: Is our shared hash not working because we have used SHA256? Could we use a different value? 
 
