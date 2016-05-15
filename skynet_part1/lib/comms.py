@@ -5,6 +5,7 @@ from Crypto.Cipher import AES # change from XOR to AES ******
 from Crypto.Util import Counter #importing counter for CTR mode
 
 from dh import create_dh_key, calculate_dh_secret
+from hmac import create_hash, check_hash
 
 class StealthConn(object):
     def __init__(self, conn, client=False, server=False, verbose=False):
@@ -35,12 +36,14 @@ class StealthConn(object):
         # Creating AES cipher with 16 bit key, counter mode and the counter initialised
         # in previous line
         self.cipher = AES.new(shared_hash[:16], AES.MODE_CTR, counter = counter)
-
+        
     def send(self, data):
         if self.cipher:
-            encrypted_data = self.cipher.encrypt(data)
+            hashed_data = create_hash(shared_hash[:32], data)
+            #byte_hashed = bytes(str(hashed_data.hexdigest()), 'ascii')
+            encrypted_data = self.cipher.encrypt(data + hashed_data)
             if self.verbose:
-                print("Original data: {}".format(data))
+                print("Original data: {}".format(hashed_data))
                 print("Encrypted data: {}".format(repr(encrypted_data)))
                 print("Sending packet of length {}".format(len(encrypted_data)))
         else:
