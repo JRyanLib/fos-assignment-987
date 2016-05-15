@@ -62,7 +62,8 @@ class StealthConn(object):
 
         encrypted_data = self.conn.recv(pkt_len)
         if self.cipher:
-            data = self.cipher.decrypt(encrypted_data)
+            data = self.cipher.decrypt(encrypted_data[:pkt_len-32])
+            hashed_data = self.cipher.decrypt(encrypted_data[pkt_len-32:])
             if self.verbose:
                 print("Receiving packet of length {}".format(pkt_len))
                 print("Encrypted data: {}".format(repr(encrypted_data)))
