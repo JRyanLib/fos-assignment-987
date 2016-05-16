@@ -37,7 +37,7 @@ class StealthConn(object):
         counter = Crypto.Util.Counter.new(128, random.randint(10000,100000))
         # Creating AES cipher with 16 bit key, counter mode and counter initialised
         # in previous line
-        self.cipher = AES.new(shared_hash[:16], AES.MODE_CTR, counter = counter)
+        self.cipher = AES.new(shared_secret[:16], AES.MODE_CTR, counter) # Changes from XOR to AES
 
     def send(self, data):
         if self.cipher:
