@@ -3,10 +3,9 @@ import struct
 from Crypto.Random import random
 from Crypto.Cipher import AES # change from XOR to AES ******
 from Crypto.Util import Counter #importing counter for CTR mode
-from Crypto.Hash import HMAC, SHA256
 
 from dh import create_dh_key, calculate_dh_secret
-#from hmac import create_hash, check_hash
+from hmac import create_hash, check_hash
 
 class StealthConn(object):
     def __init__(self, conn, client=False, server=False, verbose=False):
@@ -32,27 +31,19 @@ class StealthConn(object):
             shared_hash = calculate_dh_secret(their_public_key, my_private_key)
             print("Shared hash: {}".format(shared_hash))
 
-        # Create a counter from PyCrypto library. Has 128 bits and uses a
-        # randomly generated initial value
-        counter = Crypto.Util.Counter.new(128, random.randint(10000,100000))
-        # Creating AES cipher with 16 bit key, counter mode and counter initialised
+        # Create a 128 bit counter from PyCrypto library.
+        counter = Counter.new(128)
+        # Creating AES cipher with 16 bit key, counter mode and the counter initialised
         # in previous line
-<<<<<<< HEAD
         self.cipher = AES.new(shared_hash[:16], AES.MODE_CTR, counter = counter)
         
-=======
-        self.cipher = AES.new(shared_secret[:16], AES.MODE_CTR, counter) # Changes from XOR to AES
-
->>>>>>> parent of 2099448... AES-CTR Encryption code fix
     def send(self, data):
         if self.cipher:
-            #bytes_data = bytes(data, "ascii")
-            hashed_data = HMAC.new(str(random.getrandbits(256)), data, SHA256.new())
-            #print (hashed_data.hexdigest())
+            hashed_data = create_hash(shared_hash[:32], data)
             #byte_hashed = bytes(str(hashed_data.hexdigest()), 'ascii')
-            encrypted_data = self.cipher.encrypt(data) #+ hashed_data.hexdigest())
+            encrypted_data = self.cipher.encrypt(data + hashed_data)
             if self.verbose:
-                print("Original data: {}".format(data))
+                print("Original data: {}".format(hashed_data))
                 print("Encrypted data: {}".format(repr(encrypted_data)))
                 print("Sending packet of length {}".format(len(encrypted_data)))
         else:
@@ -71,8 +62,7 @@ class StealthConn(object):
 
         encrypted_data = self.conn.recv(pkt_len)
         if self.cipher:
-            data = self.cipher.decrypt(encrypted_data)#[:pkt_len-32])
-            #hashed_data = self.cipher.decrypt(encrypted_data[pkt_len-32:])
+            data = self.cipher.decrypt(encrypted_data)
             if self.verbose:
                 print("Receiving packet of length {}".format(pkt_len))
                 print("Encrypted data: {}".format(repr(encrypted_data)))
