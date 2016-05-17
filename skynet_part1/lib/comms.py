@@ -63,6 +63,7 @@ class StealthConn(object):
             encrypted_data = self.cipher.encrypt(data + hashed_data.digest())
             if self.verbose:
                 print("Original data: {}".format(data))
+                print("Hash: {}".format(hashed_data.hexdigest()))
                 print("Encrypted data: {}".format(repr(encrypted_data)))
                 print("Sending packet of length {}".format(len(encrypted_data)))
         else:
@@ -91,6 +92,7 @@ class StealthConn(object):
                 print("Receiving packet of length {}".format(pkt_len))
                 print("Encrypted data: {}".format(repr(encrypted_data)))
                 print("Original data: {}".format(data))
+                print("Calculated Hash: {}".format(hashed_data.hexdigest()))
 
                 if given_hashed_data == hashed_data.digest():
                     print('Message can be trusted')
