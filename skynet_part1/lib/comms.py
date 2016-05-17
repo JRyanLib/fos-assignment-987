@@ -39,15 +39,23 @@ class StealthConn(object):
         # Creating AES cipher with 16 bit key, counter mode and counter initialised in previous line
         self.cipher = AES.new(self.key[:16], AES.MODE_CTR, counter=counter) # Changes from XOR to AES
 
+        # Following will be replaced by having the snd and recv ctr seeds be the first few bytes of the shared hash
+        # Ie: self.key[:8] and self.key[8:16] converted into hex and casted as an int
+        if self.server or self.client:
+            self.send_ctr_seed = random.randint(0, 1000)
+            self.send(bytes(str(self.send_ctr_seed), 'ascii'))
+            self.recv_ctr_seed = int.from_bytes(self.recv(), 'big')
+            print("Send seed: {}".format(self.send_ctr_seed))
+            print("Recv seed: {}".format(self.recv_ctr_seed))
+            
+    def lcg_generate(seed):
+        print("Starting the LCG with seed =", seed)
         # Set up lcg for the counters to prevent replay attacks
         a, b = 15, 31
         c = 2 ** 8 - 1
 
         seed = random.randint(1, 1000)
-
-        def lcg_generate(seed):
-            print("Starting the LCG with seed =", seed)
-            return (a * seed + b) % c
+        return (a * seed + b) % c
 
     def send(self, data):
         if self.cipher:
