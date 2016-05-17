@@ -39,6 +39,16 @@ class StealthConn(object):
         # Creating AES cipher with 16 bit key, counter mode and counter initialised in previous line
         self.cipher = AES.new(self.key[:16], AES.MODE_CTR, counter=counter) # Changes from XOR to AES
 
+        # Set up lcg for the counters to prevent replay attacks
+        a, b = 15, 31
+        c = 2 ** 8 - 1
+
+        seed = random.randint(1, 1000)
+
+        def lcg_generate(seed):
+            print("Starting the LCG with seed =", seed)
+            return (a * seed + b) % c
+
     def send(self, data):
         if self.cipher:
             hashed_data = HMAC.new(bytes(self.key[:32], 'ascii'), data, SHA256.new())
