@@ -62,13 +62,22 @@ class StealthConn(object):
         pkt_len = unpacked_contents[0]
 
         encrypted_data = self.conn.recv(pkt_len)
+        msg_length = int(len(encrypted_data))
         if self.cipher:
-            data = self.cipher.decrypt(encrypted_data)#[:pkt_len-32])
-            #hashed_data = self.cipher.decrypt(encrypted_data[pkt_len-32:])
+            comb_data = self.cipher.decrypt(encrypted_data)
+            data = comb_data[:msg_length-32]
+            given_hashed_data = comb_data[msg_length-32:]
+            hashed_data = HMAC.new(bytes(self.key[:32], 'ascii'), data, SHA256)
+            
             if self.verbose:
                 print("Receiving packet of length {}".format(pkt_len))
                 print("Encrypted data: {}".format(repr(encrypted_data)))
                 print("Original data: {}".format(data))
+
+                if given_hashed_data == hashed_data.digest():
+                    print('Message can be trusted')
+                else:
+                    print('Warning! Message is altered!!')
         else:
             data = encrypted_data
 
