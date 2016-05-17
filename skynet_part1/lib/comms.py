@@ -13,6 +13,7 @@ class StealthConn(object):
         self.conn = conn
         self.cipher = None
         self.client = client
+        self.key = None
         self.server = server
         self.verbose = verbose
         self.initiate_session()
@@ -29,22 +30,19 @@ class StealthConn(object):
             # Receive their public key
             their_public_key = int(self.recv())
             # Obtain our shared secret
-            shared_hash = calculate_dh_secret(their_public_key, my_private_key)
-            print("Shared hash: {}".format(shared_hash))
+            self.key = calculate_dh_secret(their_public_key, my_private_key)
+            print("Shared hash: {}".format(self.key))
 
         # Create a counter from PyCrypto library. Has 128 bits and uses a randomly generated initial value
         counter = Counter.new(128)
 
         # Creating AES cipher with 16 bit key, counter mode and counter initialised in previous line
-        self.cipher = AES.new(shared_hash[:16], AES.MODE_CTR, counter=counter) # Changes from XOR to AES
+        self.cipher = AES.new(self.key[:16], AES.MODE_CTR, counter=counter) # Changes from XOR to AES
 
     def send(self, data):
         if self.cipher:
-            # bytes_data = bytes(data, "ascii")
-            # hashed_data = HMAC.new(str(random.getrandbits(256)), data, SHA256.new())
-            # print (hashed_data.hexdigest())
-            # byte_hashed = bytes(str(hashed_data.hexdigest()), 'ascii')
-            encrypted_data = self.cipher.encrypt(data) # hashed_data.hexdigest())
+            hashed_data = HMAC.new(bytes(self.key[:32], 'ascii'), data, SHA256.new())
+            encrypted_data = self.cipher.encrypt(data + hashed_data.digest())
             if self.verbose:
                 print("Original data: {}".format(data))
                 print("Encrypted data: {}".format(repr(encrypted_data)))
