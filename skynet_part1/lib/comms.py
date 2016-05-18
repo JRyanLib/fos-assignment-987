@@ -49,7 +49,7 @@ class StealthConn(object):
         print("Send seed: {}".format(self.from_bot1_seed))
         print("Recv seed: {}".format(self.from_bot2_seed))
 
-    def lcg_generate(seed):
+    def lcg_generate(self, seed):
         print("Starting the LCG with seed =", seed)
         # Set up lcg for the counters to prevent replay attacks
         a, b = 15, 31
@@ -61,7 +61,9 @@ class StealthConn(object):
     def send(self, data):
         if self.cipher:
             hashed_data = HMAC.new(bytes(self.key[:32], 'ascii'), data, SHA256.new())
-            encrypted_data = self.cipher.encrypt(data + hashed_data.digest())
+            self.from_bot1_seed = self.lcg_generate(self.from_bot1_seed)
+            bytes_seed = bytes(str(self.from_bot1_seed), "ascii")
+            encrypted_data = self.cipher.encrypt(data + hashed_data.digest() + bytes_seed)
             if self.verbose:
                 print("Original data: {}".format(data))
                 print("Hash: {}".format(hashed_data.hexdigest()))
