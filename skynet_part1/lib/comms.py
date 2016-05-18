@@ -42,12 +42,10 @@ class StealthConn(object):
         # Creating AES cipher with 16 bit key, counter mode and counter initialised in previous line
         self.cipher = AES.new(self.key[:16], AES.MODE_CTR, counter=counter) # Changes from XOR to AES
 
-        # Following will be replaced by having the snd and recv ctr seeds be the first few bytes of the shared hash
-        # Ie: self.key[:8] and self.key[8:16] converted into hex and casted as an int
-        self.from_bot1_seed = read_hex(self.key[:4])
-        self.from_bot2_seed = read_hex(self.key[4:8])
-        print("Send seed: {}".format(self.from_bot1_seed))
-        print("Recv seed: {}".format(self.from_bot2_seed))
+        self.send_seed = read_hex(self.key[:4])
+        self.recv_seed = self.send_seed
+        print("Send seed: {}".format(self.send_seed))
+        print("Recv seed: {}".format(self.recv_seed))
 
     def lcg_generate(self, seed):
         print("Starting the LCG with seed =", seed)
@@ -55,14 +53,13 @@ class StealthConn(object):
         a, b = 15, 31
         c = 2 ** 8 - 1
 
-        seed = random.randint(1, 1000)
         return (a * seed + b) % c
 
     def send(self, data):
         if self.cipher:
+            self.send_seed = self.lcg_generate(self.send_seed)
+            bytes_seed = bytes(str(self.send_seed%10), "ascii")
             hashed_data = HMAC.new(bytes(self.key[:32], 'ascii'), data, SHA256.new())
-            self.from_bot1_seed = self.lcg_generate(self.from_bot1_seed)
-            bytes_seed = bytes(str(self.from_bot1_seed), "ascii")
             encrypted_data = self.cipher.encrypt(data + hashed_data.digest() + bytes_seed)
             if self.verbose:
                 print("Original data: {}".format(data))
@@ -86,10 +83,13 @@ class StealthConn(object):
         encrypted_data = self.conn.recv(pkt_len)
         msg_length = int(len(encrypted_data))
         if self.cipher:
+            self.recv_seed = self.lcg_generate(self.recv_seed)
             comb_data = self.cipher.decrypt(encrypted_data)
-            data = comb_data[:msg_length-32]
-            given_hashed_data = comb_data[msg_length-32:]
+            data = comb_data[:msg_length-33]
+            given_hashed_data = comb_data[msg_length-33:msg_length-1]
+            given_seed = comb_data[msg_length-1:]
             hashed_data = HMAC.new(bytes(self.key[:32], 'ascii'), data, SHA256)
+            seed_is_same = False
             
             if self.verbose:
                 print("Receiving packet of length {}".format(pkt_len))
@@ -97,10 +97,15 @@ class StealthConn(object):
                 print("Original data: {}".format(data))
                 print("Calculated Hash: {}".format(hashed_data.hexdigest()))
 
-                if given_hashed_data == hashed_data.digest():
-                    print('Message can be trusted')
-                else:
-                    print('Warning! Message is altered!!')
+            current_seed = bytes(str(self.recv_seed % 10), 'ascii')
+            
+            if given_seed == current_seed:
+                seed_is_same = True
+
+            if given_hashed_data == hashed_data.digest() and seed_is_same:
+                print('Message can be trusted')
+            else:
+                print('Warning! Message is altered!!')
         else:
             data = encrypted_data
 
