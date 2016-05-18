@@ -98,6 +98,7 @@ class StealthConn(object):
                 print("Encrypted data: {}".format(repr(encrypted_data)))
                 print("Original data: {}".format(data))
                 print("Calculated Hash: {}".format(hashed_data.hexdigest()))
+                print("-----------------Check Integrity-----------------")
 
             current_seed = bytes(str(self.recv_seed % 10), 'ascii')
             
