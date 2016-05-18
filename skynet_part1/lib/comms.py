@@ -57,6 +57,7 @@ class StealthConn(object):
 
     def send(self, data):
         if self.cipher:
+            print("-----------------Send Section-----------------")
             self.send_seed = self.lcg_generate(self.send_seed)
             bytes_seed = bytes(str(self.send_seed%10), "ascii")
             hashed_data = HMAC.new(bytes(self.key[:32], 'ascii'), data, SHA256.new())
@@ -92,6 +93,7 @@ class StealthConn(object):
             seed_is_same = False
             
             if self.verbose:
+                print("-----------------Receive Section-----------------")
                 print("Receiving packet of length {}".format(pkt_len))
                 print("Encrypted data: {}".format(repr(encrypted_data)))
                 print("Original data: {}".format(data))
