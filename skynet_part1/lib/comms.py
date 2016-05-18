@@ -5,8 +5,9 @@ from Crypto.Cipher import AES # change from XOR to AES ******
 from Crypto.Util import Counter #importing counter for CTR mode
 from Crypto.Hash import HMAC, SHA256
 
+from lib.helpers import read_hex
 from dh import create_dh_key, calculate_dh_secret
-#from hmac import create_hash, check_hash
+
 
 class StealthConn(object):
     def __init__(self, conn, client=False, server=False, verbose=False):
@@ -14,6 +15,8 @@ class StealthConn(object):
         self.cipher = None
         self.client = client
         self.key = None
+        self.from_bot1_seed = None
+        self.from_bot2_seed = None
         self.server = server
         self.verbose = verbose
         self.initiate_session()
@@ -41,13 +44,11 @@ class StealthConn(object):
 
         # Following will be replaced by having the snd and recv ctr seeds be the first few bytes of the shared hash
         # Ie: self.key[:8] and self.key[8:16] converted into hex and casted as an int
-        if self.server or self.client:
-            self.send_ctr_seed = random.randint(0, 1000)
-            self.send(bytes(str(self.send_ctr_seed), 'ascii'))
-            self.recv_ctr_seed = int.from_bytes(self.recv(), 'big')
-            print("Send seed: {}".format(self.send_ctr_seed))
-            print("Recv seed: {}".format(self.recv_ctr_seed))
-            
+        self.from_bot1_seed = read_hex(self.key[:4])
+        self.from_bot2_seed = read_hex(self.key[4:8])
+        print("Send seed: {}".format(self.from_bot1_seed))
+        print("Recv seed: {}".format(self.from_bot2_seed))
+
     def lcg_generate(seed):
         print("Starting the LCG with seed =", seed)
         # Set up lcg for the counters to prevent replay attacks
