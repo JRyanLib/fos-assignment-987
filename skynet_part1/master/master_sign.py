@@ -1,5 +1,15 @@
 import os
 
+from Crypto.PublicKey import RSA
+from Crypto.Signature import PKCS1_v1_5
+
+# Generate an RSA public and private key. Set n to 4096bits, e to 65537
+generate_key = RSA.generate(bits=4096,e=65537)
+# print(generate_key)
+public_key = generate_key.publickey().exportKey("PEM")
+print(public_key)
+private_key = generate_key.exportKey("PEM")
+print(private_key)
 
 def sign_file(f):
     # TODO: For Part 2, you'll use public key crypto here
