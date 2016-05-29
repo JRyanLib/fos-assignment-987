@@ -18,6 +18,7 @@ def generate_keys():
     # Get the private key, store with passphrase and export it
     password_private_key = generate_key.exportKey(passphrase = password)
 
+    # Store the export private key into der file type
     key_file = open("myprivatekey.der", "wb")
     key_file.write(password_private_key)
     key_file.close()
