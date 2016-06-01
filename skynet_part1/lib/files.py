@@ -24,19 +24,20 @@ def encrypt_for_master(data):
     # Encrypt the file so it can only be read by the bot master
 
     # Generate key and IV for AES encryption with 256bits key size
-    key = os.urandom(32)
-    iv = Random.new().read(AES.block_size)
-    cipher = AES.new(key, AES.MODE_CFB, iv)
-    aes_msg = iv + cipher.encrypt(data)
+    aes_encrpytion_key = random.getrandbits(128) # export key and name aes encryption
+    iv = random.getrandbits(128)
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    ## GET PADDING
+    aes_msg = iv + cipher.encrypt(data) ## Need changes
     print(aes_msg)  # Test print. TO BE REMOVE
 
+    #
     # Obtain public key from text file for encrypting aes_msg
-    # key = open("mypublickey.txt", "r").read()
-    # encryption_key = RSA.importKey(key)
-    # pub_key = PKCS1_v1_5.new(encryption_key)
-    # encrypt_msg = pub_key.encrypt(aes_msg)
-    # print(encrypt_msg)  # Test print. TO BE REMOVE
-    # return encrypt_msg
+    pub_key = open("mypublickey.txt", "r").read()
+    rsa_encryption_key = RSA.importKey(pub_key)
+    encrypt_msg = rsa_encryption_key.encrypt(aes_msg) ## Encrpyt aes encryption key
+    print(encrypt_msg)  # encrpyted key
+    return data
 
 encrypt_for_master("Attack at dawn") # Test print. TO BE REMOVE
 
