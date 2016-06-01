@@ -28,8 +28,8 @@ def generate_keys():
     key_file.write(password_private_key)
     key_file.close()
     print("Private Key: {}".format(password_private_key))
-
-generate_keys()
+#
+# generate_keys()
 
 def sign_file(f):
     # TODO: For Part 2, you'll use public key crypto here

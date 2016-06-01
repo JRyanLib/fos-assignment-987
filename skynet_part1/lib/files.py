@@ -3,7 +3,7 @@ from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 
-from Crypto.Cipher import PKCS1_v1_5
+#from Crypto.Cipher import PKCS1_v1_5
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
 from Crypto import Random
@@ -31,12 +31,12 @@ def encrypt_for_master(data):
     print(aes_msg)  # Test print. TO BE REMOVE
 
     # Obtain public key from text file for encrypting aes_msg
-    key = open("mypublickey.txt", "r").read()
-    encryption_key = RSA.importKey(key)
-    pub_key = PKCS1_v1_5.new(encryption_key)
-    encrypt_msg = pub_key.encrypt(aes_msg)
-    print(encrypt_msg)  # Test print. TO BE REMOVE
-    return encrypt_msg
+    # key = open("mypublickey.txt", "r").read()
+    # encryption_key = RSA.importKey(key)
+    # pub_key = PKCS1_v1_5.new(encryption_key)
+    # encrypt_msg = pub_key.encrypt(aes_msg)
+    # print(encrypt_msg)  # Test print. TO BE REMOVE
+    # return encrypt_msg
 
 encrypt_for_master("Attack at dawn") # Test print. TO BE REMOVE
 
@@ -61,7 +61,8 @@ def verify_file(f):
 
     file_key = open("mypublickey.txt", "r").read()
     key = RSA.importKey (file_key)
-    hashed_file = SHA256.new() #need to put original file here
+    fn = open(os.path.join("pastebot.net","hello.fbi"), "rb").read()
+    hashed_file = SHA256.new(fn) #need to put original file here
     signer = PKCS1_v1_5.new(key)
     if signer.verify(hashed_file, f):
         return True
