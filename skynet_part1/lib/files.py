@@ -15,6 +15,17 @@ valuables = []
 
 ###
 
+def ANSI_X923_pad(m, pad_length):
+    # Work out how many bytes need to be added
+    required_padding = pad_length - (len(m) % pad_length)
+    # Use a bytearray so we can add to the end of m
+    b = bytearray(m)
+    # Then k-1 zero bytes, where k is the required padding
+    b.extend(bytes("\x00" * (required_padding-1), "ascii"))
+    # And finally adding the number of padding bytes added
+    b.append(required_padding)
+    return bytes(b)
+
 def save_valuable(data):
     valuables.append(data)
 
@@ -24,18 +35,20 @@ def encrypt_for_master(data):
     # Generate key and IV for AES encryption with 256bits key size
     aes_encryption_key = Random.get_random_bytes(16)  # Generate 256bits key
     iv = Random.get_random_bytes(AES.block_size)
-    cipher = AES.new(aes_encryption_key, AES.MODE_CFB, iv)
-    encrypted_data = cipher.encrypt(data)
-    print(data)  # Test print. TO BE REMOVE
-    print(aes_encryption_key)  # Test print. TO BE REMOVE
-    print(encrypted_data)  # Test print. TO BE REMOVE
+    #cipher = AES.new(aes_encryption_key, AES.MODE_CFB, iv)
+    cipher = AES.new(aes_encryption_key, AES.MODE_CBC, iv)
+    padded_data = ANSI_X923_pad(bytes(str(data), 'ascii'), AES.block_size)
+    encrypted_data = cipher.encrypt(padded_data)
+    #print(data)  # Test print. TO BE REMOVE
+    #print(aes_encryption_key)  # Test print. TO BE REMOVE
+    #print(encrypted_data)  # Test print. TO BE REMOVE
 
     # Obtain public key from text file for encrypting aes encryption key
     pub_key = open("mypublickey.txt", "r").read()
     rsa_encryption_key = RSA.importKey(pub_key)
     encrypt_key = rsa_encryption_key.encrypt(aes_encryption_key, 16)  # Encrypting aes key
     print(encrypt_key)
-    return data
+    return encrypted_data
 
 encrypt_for_master("Attack at dawn") # Test print. TO BE REMOVE
 
