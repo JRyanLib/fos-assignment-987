@@ -20,18 +20,17 @@ def decrypt_valuables(f, fn):
     encr_aes_key = open(os.path.join("pastebot.net", fn + ".AES.key"), "rb").read()
     aes_key = rsa_key.decrypt(encr_aes_key)
 
-    # Extracts iv from data:f
-    # iv = f[:16]
-    # print(iv)
-    # cipher = AES.new(f[:16], AES.MODE_CBC, iv)
-    # paddedData = cipher.decrypt(f[16:])
-    # unpaddedData = ANSI_X923_unpad(paddedData, AES.block_size)
-    # print(unpaddedData)
-    # return unpaddedData
-    print("test")
+    #Extracts iv from data:f
+    length = len(f)
+    iv = f[length-16:]
+    #print(iv)
+    cipher = AES.new(aes_key, AES.MODE_CBC, iv)
+    paddedData = cipher.decrypt(f[:length-16]) #decrypt the secrets only
+    unpaddedData = ANSI_X923_unpad(paddedData, AES.block_size)
 
-    # # decoded_text = str(f, 'ascii')
-    # # print(decoded_text)
+    #print(unpaddedData)
+    return unpaddedData
+
 
 def ANSI_X923_unpad(m, pad_length):
     # The last byte should represent the number of padding bytes added
@@ -49,4 +48,4 @@ if __name__ == "__main__":
         print("The given file doesn't exist on pastebot.net")
         sys.exit(1)
     f = open(os.path.join("pastebot.net", fn), "rb").read()
-    decrypt_valuables(f, fn)
+    print(decrypt_valuables(f, fn))
