@@ -6,7 +6,6 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
 from Crypto import Random
 
-
 # Instead of storing files on disk,
 # we'll save them in memory for simplicity
 filestore = {}
@@ -35,13 +34,14 @@ def encrypt_for_master(data):
     # Generate key and IV for AES encryption with 256bits key size
     aes_encryption_key = Random.get_random_bytes(16)  # Generate 256bits key
     iv = Random.get_random_bytes(AES.block_size)
-    #cipher = AES.new(aes_encryption_key, AES.MODE_CFB, iv)
     cipher = AES.new(aes_encryption_key, AES.MODE_CBC, iv)
+
     padded_data = ANSI_X923_pad(bytes(str(data), 'ascii'), AES.block_size)
     encrypted_data = cipher.encrypt(padded_data)
-    #print(data)  # Test print. TO BE REMOVE
-    #print(aes_encryption_key)  # Test print. TO BE REMOVE
-    #print(encrypted_data)  # Test print. TO BE REMOVE
+
+    # print(data)  # Test print. TO BE REMOVE
+    # print(aes_encryption_key)  # Test print. TO BE REMOVE
+    # print(encrypted_data)  # Test print. TO BE REMOVE
 
     # Obtain public key from text file for encrypting aes encryption key
     pub_key = open("mypublickey.txt", "r").read()
