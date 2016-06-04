@@ -1,9 +1,8 @@
-import os, sys
+import os
+import sys
 
 from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_v1_5
 from Crypto.Cipher import AES
-
 
 # Protect private key with a passphrase
 password = "My Secret!"
@@ -13,25 +12,22 @@ def decrypt_valuables(f, fn):
     # The existing scheme uploads in plaintext
     # As such, we just convert it back to ASCII and print it out
 
-    print("File: {}".format(f))
-
+    # Retrieve private key from text file for decrypting RSA encryption
     key = open("myprivatekey.txt", "r").read()
     rsa_key = RSA.importKey(key, passphrase=password)
     encr_aes_key = open(os.path.join("pastebot.net", fn + ".AES.key"), "rb").read()
     aes_key = rsa_key.decrypt(encr_aes_key)
 
-    #Extracts iv from data:f
+    # Decrypt AES-CBC encryption by extracting IV, unpad data
     length = len(f)
     iv = f[length-16:]
-    #print(iv)
     cipher = AES.new(aes_key, AES.MODE_CBC, iv)
-    paddedData = cipher.decrypt(f[:length-16]) #decrypt the secrets only
+    paddedData = cipher.decrypt(f[:length-16]) # decrypt the secrets only
     unpaddedData = ANSI_X923_unpad(paddedData, AES.block_size)
 
-    #print(unpaddedData)
     return unpaddedData
 
-
+# Uses unpad method from tutorial code example
 def ANSI_X923_unpad(m, pad_length):
     # The last byte should represent the number of padding bytes added
     required_padding = m[-1]

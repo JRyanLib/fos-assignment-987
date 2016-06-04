@@ -1,5 +1,5 @@
-import os, sys
-import struct
+import os
+import sys
 
 from Crypto.Cipher import PKCS1_v1_5
 from Crypto.Signature import PKCS1_v1_5
@@ -10,10 +10,10 @@ from Crypto.Hash import SHA256
 password = "My Secret!"
 
 def generate_keys():
-    # Generate an 4096 RSA public and private key.
+    # Generate an 4096 RSA public and private keys.
     generate_key = RSA.generate(bits=4096, e=65537)
 
-    # Get the public key and export it
+    # Get the public key and export it into text file
     public_key = generate_key.publickey().exportKey()
     key_file = open("mypublickey.txt", "wb")
     key_file.write(public_key)
@@ -28,7 +28,7 @@ def generate_keys():
     key_file.write(password_private_key)
     key_file.close()
     print("Private Key: {}".format(password_private_key))
-#
+
 # generate_keys()
 
 def sign_file(f):
@@ -36,14 +36,14 @@ def sign_file(f):
     # The existing scheme just ensures the updates start with the line 'Caesar'
     # This is naive -- replace it with something better!
 
-    # Obtain private key from store text file
+    # Retrieve private key from store text file
     read = open("myprivatekey.txt", "r").read()
     private_key = RSA.importKey(read, passphrase=password)
 
-    signer = PKCS1_v1_5.new(private_key)  # Use PKCS#1 as signing scheme with private key
-    digest = SHA256.new(f)  # Hash file with SHA256
+    # Use PKCS#1 as signing scheme with private key for signing
+    signer = PKCS1_v1_5.new(private_key)
+    digest = SHA256.new(f)  # Hash file with SHA256 algorithm
     sign_file = signer.sign(digest)  # Master bot sign the document with SHA256 hash
-    print(sign_file)  # Test printing for Signature
     return sign_file
 
 
