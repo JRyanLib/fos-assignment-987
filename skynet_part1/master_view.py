@@ -16,13 +16,13 @@ def decrypt_valuables(f, fn):
     key = open("myprivatekey.txt", "r").read()
     rsa_key = RSA.importKey(key, passphrase=password)
     encr_aes_key = open(os.path.join("pastebot.net", fn + ".AES.key"), "rb").read()
-    aes_key = rsa_key.decrypt(encr_aes_key)
+    key_data = rsa_key.decrypt(encr_aes_key)
 
-    # Decrypt AES-CBC encryption by extracting IV, unpad data
-    length = len(f)
-    iv = f[length-16:]
+    # Decrypt AES-CBC encryption by extracting IV and key, then unpad data
+    aes_key = key_data[:16]
+    iv = key_data[16:]
     cipher = AES.new(aes_key, AES.MODE_CBC, iv)
-    paddedData = cipher.decrypt(f[:length-16]) # decrypt the secrets only
+    paddedData = cipher.decrypt(f) # decrypt the secrets only
     unpaddedData = ANSI_X923_unpad(paddedData, AES.block_size)
 
     return unpaddedData

