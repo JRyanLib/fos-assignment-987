@@ -76,12 +76,17 @@ def verify_file(f):
     # Verify the file was sent by the bot master
     # TODO: For Part 2, you'll use public key crypto here
 
+    #Open the file containing the public key
     file_key = open("mypublickey.txt", "r").read()
-    key = RSA.importKey (file_key)
-    fn = open(os.path.join("pastebot.net","hello.fbi"), "rb").read()
-    hashed_file = SHA256.new(fn) #need to put original file here
+    key = RSA.importKey(file_key)
+
+    #Extract the orignal message from the file and hash it
+    original_file = f[:len(f)-512]
+    hashed_file = SHA256.new(original_file)
+
+    #Verify the signature
     signer = PKCS1_v1_5.new(key)
-    if signer.verify(hashed_file, f):
+    if signer.verify(hashed_file, f[len(f)-512:]):
         return True
     else:
         return False

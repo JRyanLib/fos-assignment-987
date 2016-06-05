@@ -1,7 +1,6 @@
 import os
 import sys
 
-from Crypto.Cipher import PKCS1_v1_5
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA256
@@ -9,6 +8,7 @@ from Crypto.Hash import SHA256
 # Protect private key with a passphrase
 password = "My Secret!"
 
+#Key generation to be run once only
 def generate_keys():
     # Generate an 4096 RSA public and private keys.
     generate_key = RSA.generate(bits=4096, e=65537)
@@ -29,7 +29,6 @@ def generate_keys():
     key_file.close()
     print("Private Key: {}".format(password_private_key))
 
-# generate_keys()
 
 def sign_file(f):
     # TODO: For Part 2, you'll use public key crypto here
@@ -56,6 +55,6 @@ if __name__ == "__main__":
     signed_f = sign_file(f)
     signed_fn = os.path.join("pastebot.net", fn + ".signed")
     out = open(signed_fn, "wb")
-    out.write(signed_f)
+    out.write(f + signed_f)
     out.close()
     print("Signed file written to", signed_fn)
